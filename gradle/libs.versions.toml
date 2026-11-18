@@ -1,0 +1,23 @@
+[versions]
+agp = "9.5.1"
+appcompat = "1.8.0"
+material = "1.13.0"
+lifecycle = "2.11.0"
+recyclerview = "1.4.0"
+fragment = "1.9.1"
+constraintlayout = "2.2.2"
+jackson = "3.3.0"
+
+[libraries]
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
+androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
+androidx-lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }
+androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycle" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+jackson-databind = { module = "tools.jackson.core:jackson-databind", version.ref = "jackson" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }

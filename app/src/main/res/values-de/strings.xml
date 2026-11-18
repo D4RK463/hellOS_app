@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_unknown">Unbekannter Fehler (%1$s)</string>
+    <string name="error_playback">Wiedergabefehler: %1$s</string>
+    <string name="action_retry">Erneut versuchen</string>
+
+    <string name="tab_now_playing">Wiedergabe</string>
+    <string name="tab_queue">Warteschlange</string>
+    <string name="tab_rooms">Räume</string>
+
+    <string name="menu_select_player">Player wählen</string>
+    <string name="menu_change_device">Gerät wechseln</string>
+    <string name="select_player_title">Player wählen</string>
+
+    <string name="status_connecting">Verbinde mit %1$s…</string>
+    <string name="status_connected">Verbunden mit %1$s</string>
+    <string name="status_reconnecting">Verbindung verloren, verbinde neu…</string>
+    <string name="status_disconnected">Nicht verbunden</string>
+    <string name="status_failed">Verbindung zu %1$s fehlgeschlagen</string>
+
+    <string name="connect_title">Mit einem HEOS-Gerät verbinden</string>
+    <string name="connect_description">Ein HEOS-Gerät steuert das ganze HEOS-System. Wähle ein beliebiges Gerät aus oder gib seine IP-Adresse ein. Ein HEOS-Konto ist nicht nötig.</string>
+    <string name="connect_host_hint">IP-Adresse oder Hostname</string>
+    <string name="connect_button">Verbinden</string>
+    <string name="connect_host_empty">Gib eine IP-Adresse oder einen Hostnamen ein</string>
+    <string name="discovery_title">Geräte in diesem Netzwerk</string>
+    <string name="discovery_search">Suchen</string>
+    <string name="discovery_empty">Kein Gerät gefunden. Handy und HEOS-Gerät müssen im selben WLAN sein. Du kannst die IP-Adresse auch oben eingeben.</string>
+    <string name="discovery_failed">Suche fehlgeschlagen: %1$s</string>
+
+    <string name="no_player">Kein Player gefunden</string>
+    <string name="nothing_playing">Es wird nichts abgespielt</string>
+    <string name="cd_cover">Cover</string>
+    <string name="cd_play_pause">Abspielen oder pausieren</string>
+    <string name="cd_previous">Vorheriger Titel</string>
+    <string name="cd_next">Nächster Titel</string>
+    <string name="cd_shuffle">Zufallswiedergabe</string>
+    <string name="cd_repeat">Wiederholen</string>
+    <string name="cd_mute">Stumm</string>
+    <string name="cd_volume">Lautstärke</string>
+    <string name="cd_selected">Ausgewählt</string>
+    <string name="cd_now_playing">Läuft gerade</string>
+    <string name="input_button">Eingang</string>
+    <string name="input_dialog_title">Eingang wählen</string>
+
+    <string name="queue_empty">Die Warteschlange ist leer</string>
+    <plurals name="queue_count">
+        <item quantity="one">%d Titel</item>
+        <item quantity="other">%d Titel</item>
+    </plurals>
+    <string name="queue_clear">Leeren</string>
+    <string name="queue_clear_title">Warteschlange leeren?</string>
+    <string name="queue_clear_message">Alle Titel werden aus der Warteschlange von %1$s entfernt.</string>
+
+    <string name="rooms_empty">Keine Player gefunden</string>
+    <string name="rooms_group_players">Player gruppieren</string>
+    <string name="rooms_ungroup">Gruppe auflösen</string>
+    <string name="rooms_group_dialog_title">Player für die Gruppe</string>
+    <string name="rooms_group_need_devices">Eine Gruppe spielt dieselbe Musik auf mehreren HEOS-Geräten gleichzeitig. Dafür brauchst du mindestens zwei HEOS-Geräte; in deinem System wurde nur eines gefunden.</string>
+    <string name="rooms_group_need_two">Wähle mindestens zwei Player</string>
+    <plurals name="rooms_group_members">
+        <item quantity="one">%d Player</item>
+        <item quantity="other">%d Player</item>
+    </plurals>
+
+    <string name="tab_music">Musik</string>
+    <string name="music_servers">Medienserver</string>
+    <string name="music_no_servers">Kein Medienserver gefunden. Schalte DLNA/UPnP auf deinem NAS oder Rechner ein; die HEOS-Geräte finden ihn dann selbst. Freigaben (SMB) unterstützt HEOS nicht.</string>
+    <string name="music_empty_folder">Dieser Ordner ist leer</string>
+    <string name="music_error">Laden fehlgeschlagen: %1$s</string>
+    <string name="music_play_now">Jetzt abspielen</string>
+    <string name="music_play_next">Als Nächstes abspielen</string>
+    <string name="music_add_to_end">Am Ende anhängen</string>
+    <string name="music_replace">Warteschlange ersetzen und abspielen</string>
+    <string name="music_added">Hinzugefügt: %1$s</string>
+    <string name="music_not_playable">%1$s kann nicht abgespielt werden</string>
+    <string name="cd_back">Zurück</string>
+    <string name="cd_more">Weitere Optionen</string>
+    <string name="music_play_all">Alle abspielen</string>
+    <string name="music_add_all">Alle anhängen</string>
+    <string name="cd_folder_actions">Ganzen Ordner abspielen oder anhängen</string>
+    <plurals name="music_all_added">
+        <item quantity="one">%d Titel hinzugefügt</item>
+        <item quantity="other">%d Titel hinzugefügt</item>
+    </plurals>
+    <string name="music_adding">Füge hinzu %1$d / %2$d</string>
+    <string name="music_adding_unknown">Lese Ordner…</string>
+</resources>

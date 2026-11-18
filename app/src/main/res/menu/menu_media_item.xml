@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_play_now"
+        android:title="@string/music_play_now" />
+    <item
+        android:id="@+id/action_play_next"
+        android:title="@string/music_play_next" />
+    <item
+        android:id="@+id/action_add_to_end"
+        android:title="@string/music_add_to_end" />
+    <item
+        android:id="@+id/action_replace"
+        android:title="@string/music_replace" />
+</menu>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">hellOS app</string>
+
+    <string name="error_unknown">Unknown error (%1$s)</string>
+    <string name="error_playback">Playback error: %1$s</string>
+    <string name="action_retry">Retry</string>
+
+    <string name="tab_now_playing">Now playing</string>
+    <string name="tab_queue">Queue</string>
+    <string name="tab_rooms">Rooms</string>
+
+    <string name="menu_select_player">Select player</string>
+    <string name="menu_change_device">Change device</string>
+    <string name="select_player_title">Select player</string>
+
+    <string name="status_connecting">Connecting to %1$s…</string>
+    <string name="status_connected">Connected to %1$s</string>
+    <string name="status_reconnecting">Connection lost, reconnecting…</string>
+    <string name="status_disconnected">Not connected</string>
+    <string name="status_failed">Could not connect to %1$s</string>
+
+    <string name="connect_title">Connect to a HEOS device</string>
+    <string name="connect_description">One HEOS device controls the whole HEOS system. Choose any device of your system or enter its IP address. No HEOS account is needed.</string>
+    <string name="connect_host_hint">IP address or host name</string>
+    <string name="connect_button">Connect</string>
+    <string name="connect_host_empty">Enter an IP address or host name</string>
+    <string name="discovery_title">Devices in this network</string>
+    <string name="discovery_search">Search</string>
+    <string name="discovery_empty">No device found. Phone and HEOS device must be in the same Wi-Fi network. You can also enter the IP address above.</string>
+    <string name="discovery_failed">Search failed: %1$s</string>
+
+    <string name="no_player">No player found</string>
+    <string name="nothing_playing">Nothing is playing</string>
+    <string name="cd_cover">Cover</string>
+    <string name="cd_play_pause">Play or pause</string>
+    <string name="cd_previous">Previous title</string>
+    <string name="cd_next">Next title</string>
+    <string name="cd_shuffle">Shuffle</string>
+    <string name="cd_repeat">Repeat</string>
+    <string name="cd_mute">Mute</string>
+    <string name="cd_volume">Volume</string>
+    <string name="cd_selected">Selected</string>
+    <string name="cd_now_playing">Now playing</string>
+    <string name="input_button">Input</string>
+    <string name="input_dialog_title">Choose input</string>
+
+    <string name="queue_empty">The queue is empty</string>
+    <plurals name="queue_count">
+        <item quantity="one">%d title</item>
+        <item quantity="other">%d titles</item>
+    </plurals>
+    <string name="queue_clear">Clear</string>
+    <string name="queue_clear_title">Clear queue?</string>
+    <string name="queue_clear_message">All titles are removed from the queue of %1$s.</string>
+
+    <string name="rooms_empty">No players found</string>
+    <string name="rooms_group_players">Group players</string>
+    <string name="rooms_ungroup">Ungroup</string>
+    <string name="rooms_group_dialog_title">Players for the group</string>
+    <string name="rooms_group_need_devices">Grouping plays the same music on several HEOS devices at once. It needs at least two HEOS devices; only one was found in your system.</string>
+    <string name="rooms_group_need_two">Select at least two players</string>
+    <plurals name="rooms_group_members">
+        <item quantity="one">%d player</item>
+        <item quantity="other">%d players</item>
+    </plurals>
+
+    <string name="tab_music">Music</string>
+    <string name="music_servers">Media servers</string>
+    <string name="music_no_servers">No media server found. Turn on DLNA/UPnP on your NAS or computer; the HEOS devices find it by themselves. Shared folders (SMB) are not supported by HEOS.</string>
+    <string name="music_empty_folder">This folder is empty</string>
+    <string name="music_error">Could not load: %1$s</string>
+    <string name="music_play_now">Play now</string>
+    <string name="music_play_next">Play next</string>
+    <string name="music_add_to_end">Add to queue</string>
+    <string name="music_replace">Replace queue and play</string>
+    <string name="music_added">Added: %1$s</string>
+    <string name="music_not_playable">%1$s cannot be played</string>
+    <string name="cd_back">Back</string>
+    <string name="cd_more">More options</string>
+    <string name="music_play_all">Play all</string>
+    <string name="music_add_all">Add all to queue</string>
+    <string name="cd_folder_actions">Play or queue the whole folder</string>
+    <plurals name="music_all_added">
+        <item quantity="one">%d title added</item>
+        <item quantity="other">%d titles added</item>
+    </plurals>
+    <string name="music_adding">Adding %1$d / %2$d</string>
+    <string name="music_adding_unknown">Reading folder…</string>
+</resources>

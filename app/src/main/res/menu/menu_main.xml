@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_select_player"
+        android:icon="@drawable/ic_speaker"
+        android:title="@string/menu_select_player"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_change_device"
+        android:icon="@drawable/ic_devices"
+        android:title="@string/menu_change_device"
+        app:showAsAction="never" />
+</menu>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/tab_now_playing"
+        android:icon="@drawable/ic_music_note"
+        android:title="@string/tab_now_playing" />
+    <item
+        android:id="@+id/tab_music"
+        android:icon="@drawable/ic_library_music"
+        android:title="@string/tab_music" />
+    <item
+        android:id="@+id/tab_queue"
+        android:icon="@drawable/ic_queue_music"
+        android:title="@string/tab_queue" />
+    <item
+        android:id="@+id/tab_rooms"
+        android:icon="@drawable/ic_speaker_group"
+        android:title="@string/tab_rooms" />
+</menu>
