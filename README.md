@@ -94,10 +94,54 @@ Install the debug APK on a phone with USB debugging enabled:
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-A release APK has to be signed before it can be installed, e.g. with `apksigner` from the Android
-SDK build tools or with a signing configuration in `app/build.gradle.kts`.
+A release APK has to be signed before it can be installed. Signed APKs are attached to the
+[GitHub releases](https://github.com/D4RK463/hellOS_app/releases); to sign locally, set the
+environment variables `RELEASE_KEYSTORE_FILE`, `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS` and
+`RELEASE_KEY_PASSWORD` before `assembleRelease`. The version is `0.1.0` unless it is passed with
+`-PappVersionName=X.Y.Z`.
 
 You can also open the project in Android Studio and run it from there.
+
+## Releases
+
+Every pull request merged into `main` becomes a release (`.github/workflows/release.yml`): the
+workflow derives the next version from the commits since the last tag, builds and signs the APK,
+and creates the tag `vX.Y.Z` and a GitHub release with generated release notes.
+
+Pull requests are merged with **squash merge**, and the title becomes the commit message. The title
+follows [Conventional Commits](https://www.conventionalcommits.org/), which is checked for every
+pull request (`.github/workflows/pr-title.yml`):
+
+| Title | Version | Release notes section |
+|---|---|---|
+| `feat!: …`, `fix!: …` or `BREAKING CHANGE:` in the body | major | Breaking changes |
+| `feat: …`, `feat(scope): …` | minor | Features |
+| `fix: …`, `perf: …` | patch | Fixes |
+| `refactor`, `docs`, `test`, `build`, `ci`, `chore`, `style`, `revert` | patch | Other changes |
+
+Each pull request is also built and linted (`.github/workflows/ci.yml`).
+
+### Setup of the repository (once)
+
+1. Create the release keystore and **keep it and its passwords safe**. Updates of an installed
+   app must be signed with the same key; if it is lost, users have to uninstall the app.
+
+   ```sh
+   keytool -genkeypair -keystore hellos-release.jks -alias hellos -keyalg RSA -keysize 4096 \
+       -validity 10000 -dname "CN=hellOS app"
+   ```
+
+2. Add these secrets under *Settings → Secrets and variables → Actions*:
+
+   | Secret | Value |
+   |---|---|
+   | `RELEASE_KEYSTORE_BASE64` | Output of `base64 -w0 hellos-release.jks` |
+   | `RELEASE_KEYSTORE_PASSWORD` | Password of the keystore |
+   | `RELEASE_KEY_ALIAS` | `hellos` |
+   | `RELEASE_KEY_PASSWORD` | Password of the key (same as the keystore password with the command above) |
+
+3. Under *Settings → General → Pull Requests*: allow only *squash merging* and set the default
+   commit message to *Pull request title* (or *Pull request title and description*).
 
 ### The hellOS library
 
@@ -120,6 +164,7 @@ name and, if needed, the Jackson version in `app/build.gradle.kts` and
 | `app/src/main/res` | Layouts, icons, texts (`values` English, `values-de` German) |
 | `app/libs` | hellOS library jar |
 | `docs/IDEAS.md` | Ideas for later |
+| `.github` | CI and release workflows |
 
 ## License
 

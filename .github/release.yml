@@ -1,0 +1,11 @@
+# Groups the generated release notes by the labels the "PR title" workflow sets.
+changelog:
+  categories:
+    - title: Breaking changes
+      labels: [breaking]
+    - title: Features
+      labels: [feature]
+    - title: Fixes
+      labels: [fix]
+    - title: Other changes
+      labels: ["*"]

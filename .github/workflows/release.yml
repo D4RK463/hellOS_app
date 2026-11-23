@@ -1,0 +1,90 @@
+name: Release
+
+# Every merged pull request on main becomes a release: the version is derived from the
+# Conventional Commits since the last tag, the APK is built and signed, and a GitHub release with
+# a tag vX.Y.Z and generated release notes is created.
+on:
+  push:
+    branches: [main]
+
+# One release at a time, in the order of the merges.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check that the commit comes from a pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          count="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" --jq 'length')"
+          if [[ "$count" -gt 0 ]]; then
+            echo "merged=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Direct push to main without a pull request, no release."
+            echo "merged=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Determine the next version
+        id: version
+        if: steps.pr.outputs.merged == 'true'
+        run: |
+          next="$(.github/scripts/next-version.sh)"
+          if [[ -z "$next" ]]; then
+            echo "::notice::No new commits since the last tag, no release."
+          else
+            echo "Next version: $next"
+          fi
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@v5
+        if: steps.version.outputs.next != ''
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - uses: gradle/actions/setup-gradle@v5
+        if: steps.version.outputs.next != ''
+
+      - name: Build the signed release APK
+        if: steps.version.outputs.next != ''
+        env:
+          KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          VERSION: ${{ steps.version.outputs.next }}
+        run: |
+          if [[ -z "$KEYSTORE_BASE64" || -z "$RELEASE_KEYSTORE_PASSWORD" \
+                || -z "$RELEASE_KEY_ALIAS" || -z "$RELEASE_KEY_PASSWORD" ]]; then
+            echo "::error::Signing secrets are missing, see README (Releases)."
+            exit 1
+          fi
+          export RELEASE_KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
+          base64 --decode <<< "$KEYSTORE_BASE64" > "$RELEASE_KEYSTORE_FILE"
+          ./gradlew assembleRelease -PappVersionName="$VERSION"
+          rm -f "$RELEASE_KEYSTORE_FILE"
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/hellOS-app-v${VERSION}.apk"
+
+      - name: Create the tag and the GitHub release
+        if: steps.version.outputs.next != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.next }}
+        run: |
+          gh release create "v${VERSION}" "$RUNNER_TEMP/hellOS-app-v${VERSION}.apk" \
+            --target "$GITHUB_SHA" \
+            --title "hellOS app ${VERSION}" \
+            --generate-notes
