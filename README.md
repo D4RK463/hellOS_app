@@ -121,28 +121,6 @@ pull request (`.github/workflows/pr-title.yml`):
 
 Each pull request is also built and linted (`.github/workflows/ci.yml`).
 
-### Setup of the repository (once)
-
-1. Create the release keystore and **keep it and its passwords safe**. Updates of an installed
-   app must be signed with the same key; if it is lost, users have to uninstall the app.
-
-   ```sh
-   keytool -genkeypair -keystore hellos-release.jks -alias hellos -keyalg RSA -keysize 4096 \
-       -validity 10000 -dname "CN=hellOS app"
-   ```
-
-2. Add these secrets under *Settings → Secrets and variables → Actions*:
-
-   | Secret | Value |
-   |---|---|
-   | `RELEASE_KEYSTORE_BASE64` | Output of `base64 -w0 hellos-release.jks` |
-   | `RELEASE_KEYSTORE_PASSWORD` | Password of the keystore |
-   | `RELEASE_KEY_ALIAS` | `hellos` |
-   | `RELEASE_KEY_PASSWORD` | Password of the key (same as the keystore password with the command above) |
-
-3. Under *Settings → General → Pull Requests*: allow only *squash merging* and set the default
-   commit message to *Pull request title* (or *Pull request title and description*).
-
 ### The hellOS library
 
 The library is not published to a Maven repository yet. Its jar from the
