@@ -5,3 +5,7 @@ local.properties
 *.iml
 .kotlin/
 captures/
+
+# Signing keys, never commit
+*.jks
+*.keystore

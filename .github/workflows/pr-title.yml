@@ -1,0 +1,56 @@
+name: PR title
+
+# Checks that the pull request title follows Conventional Commits (it becomes the squash commit
+# message, which decides the next version) and labels the pull request by type, so the release
+# notes are grouped (.github/release.yml).
+#
+# pull_request_target: also works for pull requests from forks. The workflow never checks out or
+# runs code of the pull request.
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the title and set the label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(feat|fix|perf|refactor|docs|test|build|ci|chore|style|revert)(\([^)]+\))?(!)?: .+'
+          if [[ ! "$TITLE" =~ $pattern ]]; then
+            echo "::error::The title must follow Conventional Commits, e.g. 'feat: sound mode for AVRs'"
+            echo "::error::or 'fix(queue): ...'. Types: feat, fix, perf, refactor, docs, test, build, ci,"
+            echo "::error::chore, style, revert. Add '!' before ':' for a breaking change."
+            exit 1
+          fi
+          type="${BASH_REMATCH[1]}"
+          if [[ -n "${BASH_REMATCH[3]}" ]]; then
+            label=breaking
+          elif [[ "$type" == feat ]]; then
+            label=feature
+          elif [[ "$type" == fix || "$type" == perf ]]; then
+            label=fix
+          else
+            label=maintenance
+          fi
+
+          gh label create breaking --color B60205 --description "Breaking change" --force
+          gh label create feature --color 0E8A16 --description "New feature" --force
+          gh label create fix --color FBCA04 --description "Bug fix" --force
+          gh label create maintenance --color C5DEF5 --description "Docs, build, refactoring, ..." --force
+
+          for other in breaking feature fix maintenance; do
+            if [[ "$other" != "$label" ]]; then
+              gh pr edit "$PR" --remove-label "$other" 2>/dev/null || true
+            fi
+          done
+          gh pr edit "$PR" --add-label "$label"
