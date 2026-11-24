@@ -116,7 +116,7 @@
         android:layout_marginTop="8dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/sound_mode"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/position">
@@ -166,4 +166,20 @@
             android:contentDescription="@string/cd_repeat"
             app:icon="@drawable/ic_repeat" />
     </LinearLayout>
+
+    <!-- only shown for AVRs that report sound modes -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/sound_mode"
+        style="@style/Widget.Material3.Button.TonalButton.Icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:visibility="gone"
+        app:icon="@drawable/ic_surround_sound"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/controls"
+        tools:text="Sound mode: Direct"
+        tools:visibility="visible" />
 </androidx.constraintlayout.widget.ConstraintLayout>

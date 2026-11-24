@@ -26,6 +26,9 @@ protocol.
   the whole queue.
 - **Rooms:** all players and groups; select a player, group players, ungroup, group volume and
   mute.
+- **Sound mode (HEOS AVR):** shows the sound mode of the original Denon HEOS AVR (Direct, Stereo,
+  Dolby Pro Logic, DTS Neo:6, …) in the Now playing tab and lets you change it. Only the modes the
+  AVR reports are offered. The AVR keeps one mode per input.
 - **Live updates:** changes made on the device, with the remote or in another app appear
   immediately.
 - English and German user interface.
@@ -40,7 +43,7 @@ The app controls the devices while it is open. It does not keep a connection in 
 
 ### Planned
 
-- Sound mode of Denon/Marantz AVRs (Direct, Pure Direct, Stereo, …)
+- Sound mode of newer Denon/Marantz AVRs (AVR-X models, Telnet/HTTP control)
 - Quick selects of AVRs, playing stream URLs, reordering the queue, and more
 
 See [docs/IDEAS.md](docs/IDEAS.md) for the full list of ideas.
@@ -50,6 +53,16 @@ See [docs/IDEAS.md](docs/IDEAS.md) for the full list of ideas.
 - Android 14 (API 34) or newer
 - Phone and HEOS devices in the same Wi-Fi network
 - HEOS devices reachable on TCP port 1255; discovery uses SSDP (UDP multicast)
+- Sound mode of the HEOS AVR: HTTP on TCP port 60006 of the AVR
+
+### Sound mode of the HEOS AVR
+
+The HEOS CLI protocol cannot change the sound mode, and the original HEOS AVR has no Telnet control
+(port 23). The app uses the AVR's own UPnP service instead (`urn:schemas-denon-com:service:ACT:1`,
+actions `GetAudioConfig` / `SetAudioConfig`), the same way as the HEOS app. To change the mode, the
+app reads the current audio configuration and sends it back with only the sound mode changed, so
+speaker settings are never touched. If the AVR does not apply a mode (e.g. a mode that does not fit
+the current signal), the app says so.
 
 ### Permissions
 
@@ -138,6 +151,7 @@ name and, if needed, the Jackson version in `app/build.gradle.kts` and
 | Path | Content |
 |---|---|
 | `app/src/main/java/org/hellos/app/heos` | Connection to the HEOS system (`HeosRepository`), discovery, settings |
+| `app/src/main/java/org/hellos/app/avr` | Sound mode of the HEOS AVR over UPnP (plain Java, no Android dependencies) |
 | `app/src/main/java/org/hellos/app/ui` | Activity, the screens (fragments) and the volume/input bar |
 | `app/src/main/res` | Layouts, icons, texts (`values` English, `values-de` German) |
 | `app/libs` | hellOS library jar |
