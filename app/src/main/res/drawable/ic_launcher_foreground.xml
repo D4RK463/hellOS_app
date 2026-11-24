@@ -1,27 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Speaker with two little horns (hellOS), centered in the 66dp safe zone of the 108dp adaptive icon. -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="vector"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
     <group
+        android:name="group"
         android:pivotX="12"
         android:pivotY="12"
+        android:translateY="-0.22"
         android:scaleX="0.55"
-        android:scaleY="0.55"
-        android:translateY="-0.22">
-        <!-- horns -->
+        android:scaleY="0.55">
         <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M6.6,7.3C4.6,6.4 4.1,3.9 5.6,1.8C5.6,4.0 7.4,5.6 9.8,7.3Z" />
+            android:name="path"
+            android:pathData="M 7.403 6.581 C 5.904 5.799 5.53 3.625 6.653 1.8 C 6.653 3.712 8.002 5.103 9.8 6.581 Z"
+            android:fillColor="#FFFFFF"/>
         <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M17.4,7.3C19.4,6.4 19.9,3.9 18.4,1.8C18.4,4.0 16.6,5.6 14.2,7.3Z" />
-        <!-- cabinet with tweeter and woofer cut out -->
+            android:name="path_1"
+            android:pathData="M 16.597 6.581 C 18.096 5.799 18.47 3.625 17.347 1.8 C 17.347 3.712 15.998 5.103 14.2 6.581 Z"
+            android:fillColor="#FFFFFF"/>
         <path
+            android:name="path_2"
+            android:pathData="M 7.5 7 L 16.5 7 C 16.898 7 17.279 7.158 17.561 7.439 C 17.842 7.721 18 8.102 18 8.5 L 18 21.5 C 18 21.898 17.842 22.279 17.561 22.561 C 17.279 22.842 16.898 23 16.5 23 L 7.5 23 C 7.102 23 6.721 22.842 6.439 22.561 C 6.158 22.279 6 21.898 6 21.5 L 6 8.5 C 6 8.102 6.158 7.721 6.439 7.439 C 6.721 7.158 7.102 7 7.5 7 Z M 10.4 11 C 10.4 11.424 10.569 11.831 10.869 12.131 C 11.169 12.431 11.576 12.6 12 12.6 C 12.424 12.6 12.831 12.431 13.131 12.131 C 13.431 11.831 13.6 11.424 13.6 11 C 13.6 10.662 13.493 10.333 13.294 10.06 C 13.096 9.786 12.816 9.583 12.494 9.478 C 12.173 9.374 11.827 9.374 11.506 9.478 C 11.184 9.583 10.904 9.786 10.706 10.06 C 10.507 10.333 10.4 10.662 10.4 11 Z M 8.4 17.5 C 8.398 18.262 8.637 19.005 9.084 19.622 C 9.53 20.239 10.161 20.699 10.885 20.935 C 11.61 21.17 12.39 21.17 13.115 20.935 C 13.839 20.699 14.47 20.239 14.916 19.622 C 15.363 19.005 15.602 18.262 15.6 17.5 C 15.6 16.546 15.22 15.629 14.546 14.954 C 13.871 14.28 12.954 13.9 12 13.9 C 11.046 13.9 10.129 14.28 9.454 14.954 C 8.78 15.629 8.4 16.546 8.4 17.5 Z M 10.6 17.5 C 10.6 17.796 10.694 18.084 10.867 18.323 C 11.041 18.562 11.286 18.74 11.567 18.831 C 11.849 18.923 12.151 18.923 12.433 18.831 C 12.714 18.74 12.959 18.562 13.133 18.323 C 13.306 18.084 13.4 17.796 13.4 17.5 C 13.401 17.204 13.308 16.915 13.134 16.675 C 12.961 16.435 12.715 16.256 12.433 16.164 C 12.152 16.073 11.848 16.073 11.567 16.164 C 11.285 16.256 11.039 16.435 10.866 16.675 C 10.692 16.915 10.599 17.204 10.6 17.5 Z"
             android:fillColor="#FFFFFF"
-            android:fillType="evenOdd"
-            android:pathData="M7.5,7H16.5A1.5,1.5 0,0 1,18 8.5V21.5A1.5,1.5 0,0 1,16.5 23H7.5A1.5,1.5 0,0 1,6 21.5V8.5A1.5,1.5 0,0 1,7.5 7Z M10.4,11a1.6,1.6 0,1 0,3.2 0a1.6,1.6 0,1 0,-3.2 0Z M8.4,17.5a3.6,3.6 0,1 0,7.2 0a3.6,3.6 0,1 0,-7.2 0Z M10.6,17.5a1.4,1.4 0,1 0,2.8 0a1.4,1.4 0,1 0,-2.8 0Z" />
+            android:fillType="evenOdd"/>
     </group>
 </vector>
