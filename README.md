@@ -44,7 +44,8 @@ The app controls the devices while it is open. It does not keep a connection in 
 ### Planned
 
 - Sound mode of newer Denon/Marantz AVRs (AVR-X models, Telnet/HTTP control)
-- Quick selects of AVRs, playing stream URLs, reordering the queue, and more
+- Online radio streams without a HEOS account
+- Quick selects of AVRs, reordering the queue, and more
 
 See [docs/IDEAS.md](docs/IDEAS.md) for the full list of ideas.
 
