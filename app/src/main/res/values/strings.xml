@@ -44,6 +44,10 @@
     <string name="cd_now_playing">Now playing</string>
     <string name="input_button">Input</string>
     <string name="input_dialog_title">Choose input</string>
+    <string name="sound_mode_button">Sound mode: %1$s</string>
+    <string name="sound_mode_dialog_title">Sound mode</string>
+    <string name="sound_mode_not_applied">%1$s is not available with the current signal</string>
+    <string name="sound_mode_error">Could not set the sound mode: %1$s</string>
 
     <string name="queue_empty">The queue is empty</string>
     <plurals name="queue_count">

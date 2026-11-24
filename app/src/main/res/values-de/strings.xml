@@ -42,6 +42,10 @@
     <string name="cd_now_playing">Läuft gerade</string>
     <string name="input_button">Eingang</string>
     <string name="input_dialog_title">Eingang wählen</string>
+    <string name="sound_mode_button">Klangmodus: %1$s</string>
+    <string name="sound_mode_dialog_title">Klangmodus</string>
+    <string name="sound_mode_not_applied">%1$s ist mit dem aktuellen Signal nicht verfügbar</string>
+    <string name="sound_mode_error">Klangmodus konnte nicht gesetzt werden: %1$s</string>
 
     <string name="queue_empty">Die Warteschlange ist leer</string>
     <plurals name="queue_count">

@@ -4,19 +4,20 @@ Features that are not part of the first version (MVP) of the hellOS app.
 
 ## Planned
 
-### Sound mode of Denon/Marantz AVRs (Direct, Pure Direct, Stereo, ...)
+### Sound mode of the Denon HEOS AVR (Direct, Stereo, ...) – in progress
 
 Choose how the AVR processes the input signal, e.g. pass HDMI 1 through directly or upmix it.
 
 - Not possible with HEOS: the HEOS CLI protocol (and hellOS) can only select the input
   (`inputs/hdmi_in_1`), not the sound mode.
-- Denon/Marantz AVRs have their own control protocol next to HEOS: Telnet on port 23 (or HTTP).
-  Commands, for example: `MS?` (query), `MSDIRECT`, `MSPURE DIRECT`, `MSSTEREO`, `MSAUTO`,
-  `MSMCH STEREO`, `MSDOLBY DIGITAL`, `MSDTS SURROUND`.
+- The Denon Telnet protocol (port 23) and the `/goform` HTTP interface are closed on the original
+  HEOS AVR. It has a UPnP service instead: `urn:schemas-denon-com:service:ACT:1` on port 60006
+  with `GetAudioConfig` / `SetAudioConfig`. The configuration contains the current `soundMode` and
+  the `availableSoundModes` of the device.
 - The format of the incoming signal (e.g. Dolby Atmos) is decided by the source; the AVR only
   decides how it is processed.
-- Open question: implement it in the app or as a separate module/library next to hellOS.
-- Only show it for players that are AVRs (`PlayerInfo.model()`).
+- Implemented in the app (`org.hellos.app.avr`, plain Java), can move into a library later.
+- Newer AVR-X models use Telnet/HTTP instead; supporting them would be a separate extension.
 
 ## Possible extensions
 

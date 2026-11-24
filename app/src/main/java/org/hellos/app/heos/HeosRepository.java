@@ -16,6 +16,9 @@ import androidx.lifecycle.MutableLiveData;
 import org.hellos.HeosSystem;
 import org.hellos.Player;
 import org.hellos.app.R;
+import org.hellos.app.avr.AudioConfig;
+import org.hellos.app.avr.AvrAudioClient;
+import org.hellos.app.avr.SoundModeNames;
 import org.hellos.connection.ConnectionState;
 import org.hellos.event.HeosEvent;
 import org.hellos.model.AddCriteria;
@@ -32,6 +35,7 @@ import org.hellos.model.QueueItem;
 import org.hellos.model.Range;
 import org.hellos.model.RepeatMode;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,6 +62,8 @@ public final class HeosRepository implements DefaultLifecycleObserver {
     private static final int VOLUME_KEY_STEP = 2;
     /** Page size when browsing folders of a media server. */
     public static final int BROWSE_PAGE_SIZE = 100;
+    /** Time the AVR needs after an input change before it reports the mode of the new input. */
+    private static final long SOUND_MODE_AFTER_INPUT_MS = 1500;
 
     private final Context context;
     private final AppPreferences preferences;
@@ -67,6 +73,17 @@ public final class HeosRepository implements DefaultLifecycleObserver {
         thread.setDaemon(true);
         return thread;
     });
+    /** Blocking HTTP requests to the AVR (sound mode), one after another. */
+    private final ExecutorService avrIo = Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r, "hellos-app-avr");
+        thread.setDaemon(true);
+        return thread;
+    });
+    /** Only used on {@link #avrIo}; kept so the device description is read once per host. */
+    @Nullable
+    private AvrAudioClient avrClient;
+    /** Incremented on every sound mode request, so only the newest answer is shown. */
+    private int soundModeRequest;
 
     @Nullable
     private HeosSystem heos;
@@ -89,6 +106,7 @@ public final class HeosRepository implements DefaultLifecycleObserver {
     private final MutableLiveData<List<QueueItem>> queue = new MutableLiveData<>(List.of());
     private final MutableLiveData<OneShot<String>> messages = new MutableLiveData<>();
     private final MutableLiveData<FolderProgress> folderProgress = new MutableLiveData<>();
+    private final MutableLiveData<SoundModeState> soundMode = new MutableLiveData<>();
 
     public HeosRepository(Context context) {
         this.context = context.getApplicationContext();
@@ -113,6 +131,8 @@ public final class HeosRepository implements DefaultLifecycleObserver {
     public LiveData<List<QueueItem>> queue() { return queue; }
     /** Progress of {@link #playFolder}, {@code null} while no folder is being added. */
     public LiveData<FolderProgress> folderProgress() { return folderProgress; }
+    /** Sound mode of the selected player; {@code null} if it is not an AVR with sound modes. */
+    public LiveData<SoundModeState> soundMode() { return soundMode; }
     /** Errors and hints to show once, e.g. in a snackbar. */
     public LiveData<OneShot<String>> messages() { return messages; }
 
@@ -324,6 +344,7 @@ public final class HeosRepository implements DefaultLifecycleObserver {
         load(player.volume().thenCombine(player.isMuted(), Volume::new), volume::setValue);
         load(player.playMode(), playMode::setValue);
         refreshQueue();
+        refreshSoundMode(null);
     }
 
     private void refreshNowPlaying() {
@@ -350,6 +371,7 @@ public final class HeosRepository implements DefaultLifecycleObserver {
                 selectedPlayer.setValue(info);
                 nowPlaying.setValue(null);
                 queue.setValue(List.of());
+                soundMode.setValue(null);
                 refreshSelectedPlayer();
                 return;
             }
@@ -508,7 +530,109 @@ public final class HeosRepository implements DefaultLifecycleObserver {
     }
 
     public void playInput(InputChoice choice) {
-        run(choice.play().get());
+        // the AVR keeps a sound mode per input: read it again once the input has switched
+        load(choice.play().get(), ignored -> {
+            int gen = generation;
+            main.postDelayed(() -> {
+                if (gen == generation && started) {
+                    refreshSoundMode(null);
+                }
+            }, SOUND_MODE_AFTER_INPUT_MS);
+        });
+    }
+
+    // ---- sound mode (HEOS AVR, over its UPnP service, not over HEOS) --------------------------
+
+    /**
+     * Reads the sound mode of the selected player. Players that are no AVR (or do not answer)
+     * get {@code null}, which hides the sound mode in the UI; no message is shown for them.
+     *
+     * @param onLoaded called with the new state if it could be read, may be {@code null}
+     */
+    public void refreshSoundMode(@Nullable Consumer<SoundModeState> onLoaded) {
+        PlayerInfo selected = selectedPlayer.getValue();
+        String host = selected == null ? null : selected.ipAddress().filter(ip -> !ip.isBlank()).orElse(null);
+        if (host == null) {
+            soundMode.setValue(null);
+            return;
+        }
+        long playerId = selected.playerId();
+        int request = ++soundModeRequest;
+        int gen = generation;
+        avrIo.execute(() -> {
+            AudioConfig config;
+            try {
+                config = avrClient(host).audioConfig();
+            } catch (IOException | RuntimeException e) {
+                Log.d(TAG, "No sound mode from " + host + ": " + e);
+                config = null;
+            }
+            AudioConfig result = config;
+            onMain(gen, () -> {
+                if (request != soundModeRequest || selectedId() != playerId) {
+                    return;
+                }
+                if (result == null || !result.hasSoundModes() || result.soundMode().isEmpty()) {
+                    soundMode.setValue(null);
+                    return;
+                }
+                SoundModeState state = new SoundModeState(result.soundMode(), result.availableSoundModes(), false);
+                soundMode.setValue(state);
+                if (onLoaded != null) {
+                    onLoaded.accept(state);
+                }
+            });
+        });
+    }
+
+    /** Sets the sound mode of the selected AVR and reports if the device did not apply it. */
+    public void setSoundMode(String mode) {
+        PlayerInfo selected = selectedPlayer.getValue();
+        SoundModeState current = soundMode.getValue();
+        String host = selected == null ? null : selected.ipAddress().orElse(null);
+        if (host == null || current == null || current.busy()) {
+            return;
+        }
+        long playerId = selected.playerId();
+        int request = ++soundModeRequest;
+        int gen = generation;
+        soundMode.setValue(current.withBusy(true));
+        avrIo.execute(() -> {
+            AudioConfig after = null;
+            String error = null;
+            try {
+                after = avrClient(host).setSoundMode(mode);
+            } catch (IOException | RuntimeException e) {
+                Log.w(TAG, "Setting sound mode " + mode + " on " + host + " failed", e);
+                error = describe(e);
+            }
+            AudioConfig result = after;
+            String failure = error;
+            onMain(gen, () -> {
+                if (request != soundModeRequest || selectedId() != playerId) {
+                    return;
+                }
+                if (result == null) {
+                    soundMode.setValue(current.withBusy(false));
+                    message(context.getString(R.string.sound_mode_error, failure));
+                    return;
+                }
+                soundMode.setValue(new SoundModeState(result.soundMode(), result.availableSoundModes(), false));
+                if (!mode.equals(result.soundMode())) {
+                    message(context.getString(R.string.sound_mode_not_applied, SoundModeNames.label(mode)));
+                }
+            });
+        });
+    }
+
+    /** Only call on {@link #avrIo}. */
+    private AvrAudioClient avrClient(String host) {
+        AvrAudioClient client = avrClient;
+        if (client == null || !client.host().equals(host.trim())) {
+            client = new AvrAudioClient(host);
+            avrClient = client;
+        }
+        return client;
     }
 
     // ---- music: local media servers (DLNA/UPnP, USB), no HEOS account needed -----------------

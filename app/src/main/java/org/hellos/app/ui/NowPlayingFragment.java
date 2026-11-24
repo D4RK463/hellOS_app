@@ -10,16 +10,22 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import org.hellos.app.HellosApplication;
 import org.hellos.app.R;
+import org.hellos.app.avr.SoundModeNames;
 import org.hellos.app.databinding.FragmentNowPlayingBinding;
 import org.hellos.app.heos.HeosRepository;
 import org.hellos.app.heos.Progress;
+import org.hellos.app.heos.SoundModeState;
 import org.hellos.model.NowPlayingMedia;
 import org.hellos.model.PlayMode;
 import org.hellos.model.PlayState;
 import org.hellos.model.PlayerInfo;
 import org.hellos.model.RepeatMode;
+
+import java.util.List;
 
 /** Cover, title and playback controls of the selected player. Volume and input: {@link ControlBar}. */
 public final class NowPlayingFragment extends Fragment {
@@ -65,6 +71,8 @@ public final class NowPlayingFragment extends Fragment {
         });
         b.shuffle.setOnClickListener(v -> repository.toggleShuffle());
         b.repeat.setOnClickListener(v -> repository.cycleRepeat());
+        // read the mode again before showing the choice, it may have been changed with the remote
+        b.soundMode.setOnClickListener(v -> repository.refreshSoundMode(this::showSoundModes));
 
         var owner = getViewLifecycleOwner();
         repository.selectedPlayer().observe(owner, this::renderPlayer);
@@ -72,6 +80,7 @@ public final class NowPlayingFragment extends Fragment {
         repository.playState().observe(owner, this::renderPlayState);
         repository.progress().observe(owner, this::renderProgress);
         repository.playMode().observe(owner, this::renderPlayMode);
+        repository.soundMode().observe(owner, this::renderSoundMode);
     }
 
     @Override
@@ -177,5 +186,37 @@ public final class NowPlayingFragment extends Fragment {
         binding.shuffle.setAlpha(mode.shuffle() ? 1f : INACTIVE_ALPHA);
         binding.repeat.setAlpha(mode.repeat() == RepeatMode.OFF ? INACTIVE_ALPHA : 1f);
         binding.repeat.setIconResource(mode.repeat() == RepeatMode.ON_ONE ? R.drawable.ic_repeat_one : R.drawable.ic_repeat);
+    }
+
+    private void renderSoundMode(@Nullable SoundModeState state) {
+        if (binding == null) {
+            return;
+        }
+        binding.soundMode.setVisibility(state == null ? View.GONE : View.VISIBLE);
+        if (state != null) {
+            binding.soundMode.setText(getString(R.string.sound_mode_button, SoundModeNames.label(state.current())));
+            binding.soundMode.setEnabled(!state.busy());
+        }
+    }
+
+    private void showSoundModes(SoundModeState state) {
+        if (binding == null || !isAdded() || state.available().isEmpty()) {
+            return;
+        }
+        List<String> modes = state.available();
+        String[] labels = new String[modes.size()];
+        for (int i = 0; i < modes.size(); i++) {
+            labels[i] = SoundModeNames.label(modes.get(i));
+        }
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.sound_mode_dialog_title)
+                .setSingleChoiceItems(labels, modes.indexOf(state.current()), (dialog, which) -> {
+                    dialog.dismiss();
+                    if (!modes.get(which).equals(state.current())) {
+                        repository.setSoundMode(modes.get(which));
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 }
