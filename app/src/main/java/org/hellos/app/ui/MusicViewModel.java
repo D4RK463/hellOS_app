@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModel;
 
+import org.hellos.app.radio.Station;
 import org.hellos.model.MediaItem;
 
 import java.util.ArrayDeque;
@@ -14,21 +15,35 @@ import java.util.Deque;
 import java.util.List;
 
 /**
- * The folder levels of the music tab. Scoped to the activity, so the position survives switching
+ * The levels of the music tab. Scoped to the activity, so the position survives switching
  * tabs (the tab fragments are recreated on every switch).
  */
 public final class MusicViewModel extends ViewModel {
 
-    /** One folder level: the list of servers, the top of a server, or a folder within a server. */
+    /** What a level shows. */
+    enum Kind {
+        /** Radio favorites, the station search entry and the media servers. */
+        ROOT,
+        /** The top or a folder of a media server. */
+        FOLDER,
+        /** Station search on radio-browser.info. */
+        RADIO_SEARCH
+    }
+
+    /** One level: the start page, the top of a server, a folder within a server, or the station search. */
     static final class Level {
         final String title;
-        /** The list of servers, not a server. Source ids can be negative, so this is a flag of its own. */
-        final boolean serverList;
-        /** The server; unused for the list of servers. */
+        final Kind kind;
+        /** The server; only for {@link Kind#FOLDER}. Source ids can be negative. */
         final long sourceId;
         @Nullable
         final String containerId;
+        /** Media servers (root) or the content of a folder. */
         final List<MediaItem> items = new ArrayList<>();
+        /** Search result of {@link Kind#RADIO_SEARCH}. */
+        final List<Station> stations = new ArrayList<>();
+        /** The search text of {@link Kind#RADIO_SEARCH}. */
+        String query = "";
         /** Total number of items as reported by the device, {@code 0} if unknown. */
         int count;
         boolean complete;
@@ -39,27 +54,28 @@ public final class MusicViewModel extends ViewModel {
         @Nullable
         Parcelable scrollState;
 
-        static Level servers(String title) {
-            return new Level(title, true, 0, null);
+        static Level root(String title) {
+            return new Level(title, Kind.ROOT, 0, null);
+        }
+
+        static Level radioSearch(String title) {
+            return new Level(title, Kind.RADIO_SEARCH, 0, null);
         }
 
         Level(String title, long sourceId, @Nullable String containerId) {
-            this(title, false, sourceId, containerId);
+            this(title, Kind.FOLDER, sourceId, containerId);
         }
 
-        private Level(String title, boolean serverList, long sourceId, @Nullable String containerId) {
+        private Level(String title, Kind kind, long sourceId, @Nullable String containerId) {
             this.title = title;
-            this.serverList = serverList;
+            this.kind = kind;
             this.sourceId = sourceId;
             this.containerId = containerId;
         }
 
-        boolean isServerList() {
-            return serverList;
-        }
-
         void reset() {
             items.clear();
+            stations.clear();
             count = 0;
             complete = false;
             loading = false;

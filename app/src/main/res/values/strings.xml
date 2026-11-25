@@ -91,4 +91,21 @@
     </plurals>
     <string name="music_adding">Adding %1$d / %2$d</string>
     <string name="music_adding_unknown">Reading folder…</string>
+
+    <string name="action_undo">Undo</string>
+    <string name="radio_favorites">Radio favorites</string>
+    <string name="radio_no_favorites">No favorites yet. Search for a station and tap the star.</string>
+    <string name="radio_search">Search radio stations</string>
+    <string name="radio_search_hint">Station name</string>
+    <string name="radio_search_intro">Enter the name of a station. The stations come from radio-browser.info; each station shows its stream format. Not every format plays on every HEOS device.</string>
+    <string name="radio_no_stations">No station found</string>
+    <string name="radio_search_error">Search failed: %1$s</string>
+    <string name="radio_favorite_add">Add to favorites</string>
+    <string name="radio_favorite_remove">Remove from favorites</string>
+    <string name="radio_starting">Starting %1$s…</string>
+    <string name="radio_play_failed">%1$s (%2$s) could not be played. %3$s</string>
+    <string name="radio_error_timeout">The device did not answer.</string>
+    <string name="radio_error_refused">The device does not accept this stream (%1$s).</string>
+    <string name="radio_playback_error">%1$s (%2$s) stopped: %3$s</string>
+    <string name="radio_favorite_removed">Removed from favorites: %1$s</string>
 </resources>

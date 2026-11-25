@@ -9,21 +9,28 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 import com.google.android.material.color.DynamicColors;
 
 import org.hellos.app.heos.HeosRepository;
+import org.hellos.app.radio.RadioRepository;
 
 public final class HellosApplication extends Application {
 
     private HeosRepository repository;
+    private RadioRepository radio;
 
     @Override
     public void onCreate() {
         super.onCreate();
         DynamicColors.applyToActivitiesIfAvailable(this);
         repository = new HeosRepository(this);
+        radio = new RadioRepository(this);
         // connected while any activity of the app is visible, disconnected otherwise
         ProcessLifecycleOwner.get().getLifecycle().addObserver(repository);
     }
 
     public static HeosRepository repository(Context context) {
         return ((HellosApplication) context.getApplicationContext()).repository;
+    }
+
+    public static RadioRepository radio(Context context) {
+        return ((HellosApplication) context.getApplicationContext()).radio;
     }
 }

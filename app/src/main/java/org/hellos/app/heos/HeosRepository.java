@@ -19,6 +19,9 @@ import org.hellos.app.R;
 import org.hellos.app.avr.AudioConfig;
 import org.hellos.app.avr.AvrAudioClient;
 import org.hellos.app.avr.SoundModeNames;
+import org.hellos.app.radio.Station;
+import org.hellos.cli.HeosCommandException;
+import org.hellos.cli.HeosTimeoutException;
 import org.hellos.connection.ConnectionState;
 import org.hellos.event.HeosEvent;
 import org.hellos.model.AddCriteria;
@@ -26,6 +29,7 @@ import org.hellos.model.BrowseResult;
 import org.hellos.model.GroupInfo;
 import org.hellos.model.Input;
 import org.hellos.model.MediaItem;
+import org.hellos.model.MediaType;
 import org.hellos.model.MusicSources;
 import org.hellos.model.NowPlayingMedia;
 import org.hellos.model.PlayMode;
@@ -42,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
@@ -107,6 +112,17 @@ public final class HeosRepository implements DefaultLifecycleObserver {
     private final MutableLiveData<OneShot<String>> messages = new MutableLiveData<>();
     private final MutableLiveData<FolderProgress> folderProgress = new MutableLiveData<>();
     private final MutableLiveData<SoundModeState> soundMode = new MutableLiveData<>();
+
+    /**
+     * The radio station last started from the app. HEOS only knows the stream URL, so its name and
+     * logo are added to the now playing media while the player plays it.
+     */
+    @Nullable
+    private Station stream;
+    private long streamPlayerId;
+    /** Source and media id of the stream as reported by the device; {@code null} until known. */
+    @Nullable
+    private String streamKey;
 
     public HeosRepository(Context context) {
         this.context = context.getApplicationContext();
@@ -249,8 +265,12 @@ public final class HeosRepository implements DefaultLifecycleObserver {
             case HeosEvent.PlayerNowPlayingChanged e when e.playerId() == selected -> refreshNowPlaying();
             case HeosEvent.PlayerNowPlayingProgress e when e.playerId() == selected ->
                     progress.setValue(new Progress(e.position().toMillis(), e.duration().toMillis()));
-            case HeosEvent.PlayerPlaybackError e when e.playerId() == selected ->
-                    message(context.getString(R.string.error_playback, e.error()));
+            case HeosEvent.PlayerPlaybackError e when e.playerId() == selected -> {
+                Station station = stream;
+                message(station != null && streamPlayerId == e.playerId()
+                        ? context.getString(R.string.radio_playback_error, station.name(), station.formatTag(), e.error())
+                        : context.getString(R.string.error_playback, e.error()));
+            }
             case HeosEvent.PlayerQueueChanged e when e.playerId() == selected -> refreshQueue();
             case HeosEvent.PlayerVolumeChanged e when e.playerId() == selected ->
                     volume.setValue(new Volume(e.level(), e.muted()));
@@ -350,7 +370,7 @@ public final class HeosRepository implements DefaultLifecycleObserver {
     private void refreshNowPlaying() {
         Player player = player();
         if (player != null) {
-            load(player.nowPlaying(), nowPlaying::setValue);
+            load(player.nowPlaying(), media -> nowPlaying.setValue(withStation(media)));
         }
     }
 
@@ -684,6 +704,73 @@ public final class HeosRepository implements DefaultLifecycleObserver {
         }, this::message);
     }
 
+    // ---- internet radio: plays a stream URL, no HEOS account needed ----------------------------
+
+    /** Plays the station on the selected player; {@code onStarted} runs once the device accepted it. */
+    public void playStation(Station station, Runnable onStarted) {
+        Player player = player();
+        if (player == null) {
+            message(context.getString(R.string.no_player));
+            return;
+        }
+        long playerId = selectedId();
+        // the device may take a while to open the stream; the command times out after 15 s
+        message(context.getString(R.string.radio_starting, station.name()));
+        int gen = generation;
+        player.playUrl(station.url()).whenComplete((ignored, error) -> onMain(gen, () -> {
+            if (error != null) {
+                Log.w(TAG, "Station not played: " + station.url(), error);
+                message(context.getString(R.string.radio_play_failed, station.name(), station.formatTag(),
+                        describePlayError(error)));
+                return;
+            }
+            stream = station;
+            streamPlayerId = playerId;
+            streamKey = null;
+            refreshNowPlaying();
+            onStarted.run();
+        }));
+    }
+
+    /** The reason why a stream was refused, readable for users; the HEOS details for testing. */
+    private String describePlayError(Throwable error) {
+        Throwable cause = unwrap(error);
+        if (cause instanceof HeosTimeoutException) {
+            return context.getString(R.string.radio_error_timeout);
+        }
+        if (cause instanceof HeosCommandException command) {
+            String details = command.errorText() == null || command.errorText().isBlank()
+                    ? "eid " + command.errorId()
+                    : command.errorText() + ", eid " + command.errorId();
+            return context.getString(R.string.radio_error_refused, details);
+        }
+        return describe(error);
+    }
+
+    /** Adds name and logo of the station started from the app, see {@link #stream}. */
+    @Nullable
+    private NowPlayingMedia withStation(@Nullable NowPlayingMedia media) {
+        Station station = stream;
+        if (station == null || media == null || media.isEmpty() || selectedId() != streamPlayerId) {
+            return media;
+        }
+        String key = media.sourceId() + "|" + media.mediaId().orElse("");
+        if (streamKey == null || media.mediaId().filter(station.url()::equals).isPresent()) {
+            // the first media reported after the device accepted the stream is the stream
+            streamKey = key;
+        } else if (!streamKey.equals(key)) {
+            stream = null;
+            return media;
+        }
+        Optional<String> image = media.imageUrl().filter(url -> !url.isBlank());
+        if (image.isEmpty() && !station.favicon().isEmpty()) {
+            image = Optional.of(station.favicon());
+        }
+        return new NowPlayingMedia(MediaType.STATION, media.song(), media.album(), media.artist(),
+                Optional.of(station.name()), image, media.mediaId(), media.queueId(), media.sourceId(),
+                media.albumId(), media.options());
+    }
+
     /**
      * Plays or appends all titles of a folder in their order. Only one folder at a time: while
      * {@link #folderProgress()} is not {@code null}, further calls are ignored.
@@ -831,12 +918,17 @@ public final class HeosRepository implements DefaultLifecycleObserver {
         messages.setValue(new OneShot<>(text));
     }
 
-    private String describe(Throwable error) {
+    private static Throwable unwrap(Throwable error) {
         Throwable cause = error;
         while ((cause instanceof CompletionException || cause instanceof ExecutionException)
                 && cause.getCause() != null) {
             cause = cause.getCause();
         }
+        return cause;
+    }
+
+    private String describe(Throwable error) {
+        Throwable cause = unwrap(error);
         String text = cause.getMessage();
         return text == null || text.isBlank() ? context.getString(R.string.error_unknown, cause.getClass().getSimpleName()) : text;
     }
