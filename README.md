@@ -2,7 +2,8 @@
 
 An open source Android app to control Denon and Marantz HEOS devices in the local network. It is
 an alternative to the official HEOS app: no HEOS account, no cloud, only the HEOS CLI protocol
-between your phone and your devices.
+between your phone and your devices. The only exception is the optional station search for
+internet radio, see [Internet radio](#internet-radio).
 
 The app is built on [hellOS](https://github.com/D4RK463/hellOS), a Java library for the HEOS CLI
 protocol.
@@ -22,6 +23,8 @@ protocol.
 - **Music from your network:** browse DLNA/UPnP media servers (e.g. a NAS) and USB drives
   connected to a HEOS device. Play a title, play it next, add it to the queue, or play or queue a
   whole folder.
+- **Internet radio:** search stations by name and keep favorites, both in the music tab. A tap
+  plays the station on the selected player; name and logo of the station are shown in now playing.
 - **Queue:** shows the queue of the selected player; tap to play a title, swipe to remove it, clear
   the whole queue.
 - **Rooms:** all players and groups; select a player, group players, ungroup, group volume and
@@ -32,6 +35,18 @@ protocol.
 - **Live updates:** changes made on the device, with the remote or in another app appear
   immediately.
 - English and German user interface.
+
+### Internet radio
+
+The stations come from [radio-browser.info](https://www.radio-browser.info/), a free, community
+maintained station directory without account or API key. Only the search goes there: the
+service sees your IP address and what you search for. The favorites are stored on the phone
+only. The stream itself is played by the HEOS device, the phone does not take part in it.
+
+All stations are listed. Not every stream plays on every HEOS device (e.g. HTTPS or HLS streams
+on older devices, or stream URLs longer than about 255 characters, a limit of the HEOS firmware),
+so each station shows its format as a tag, e.g. `MP3 · HTTP`. If the device cannot play a
+stream, the app shows the station, its format and the reason.
 
 ### Not included, on purpose
 
@@ -44,7 +59,7 @@ The app controls the devices while it is open. It does not keep a connection in 
 ### Planned
 
 - Sound mode of newer Denon/Marantz AVRs (AVR-X models, Telnet/HTTP control)
-- Online radio streams without a HEOS account
+- Online radio: entering stream URLs by hand, sorting favorites
 - Quick selects of AVRs, reordering the queue, and more
 
 See [docs/IDEAS.md](docs/IDEAS.md) for the full list of ideas.
