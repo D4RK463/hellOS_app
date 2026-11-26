@@ -26,6 +26,8 @@ final class CoverLoader {
     private static final int TIMEOUT_MS = 5000;
     private static final int MAX_BYTES = 4 * 1024 * 1024;
     private static final int TARGET_SIZE_PX = 640;
+    private static final int MAX_REDIRECTS = 5;
+    private static final String USER_AGENT = "Mozilla/5.0 (Linux; Android) hellOS-app";
 
     private static final LruCache<String, Bitmap> CACHE = new LruCache<>(24 * 1024 * 1024) {
         @Override
@@ -73,14 +75,9 @@ final class CoverLoader {
     @Nullable
     private static Bitmap download(String url) {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setConnectTimeout(TIMEOUT_MS);
-            connection.setReadTimeout(TIMEOUT_MS);
-            byte[] data;
-            try (InputStream in = connection.getInputStream()) {
-                data = in.readNBytes(MAX_BYTES);
-            } finally {
-                connection.disconnect();
+            byte[] data = fetch(url);
+            if (data == null) {
+                return null;
             }
             BitmapFactory.Options bounds = new BitmapFactory.Options();
             bounds.inJustDecodeBounds = true;
@@ -95,5 +92,44 @@ final class CoverLoader {
             Log.d(TAG, "Cover not loaded from " + url + ": " + e);
             return null;
         }
+    }
+
+    /**
+     * The bytes at {@code url}. Redirects are followed here, because {@link HttpURLConnection} does
+     * not follow them between HTTP and HTTPS, which many station logos need.
+     */
+    @Nullable
+    private static byte[] fetch(String url) throws IOException {
+        URL current = new URL(url);
+        for (int redirects = 0; redirects <= MAX_REDIRECTS; redirects++) {
+            HttpURLConnection connection = (HttpURLConnection) current.openConnection();
+            connection.setConnectTimeout(TIMEOUT_MS);
+            connection.setReadTimeout(TIMEOUT_MS);
+            connection.setInstanceFollowRedirects(false);
+            // some web servers refuse requests without a browser-like user agent
+            connection.setRequestProperty("User-Agent", USER_AGENT);
+            try {
+                int status = connection.getResponseCode();
+                if (status >= 300 && status < 400) {
+                    String location = connection.getHeaderField("Location");
+                    if (location == null) {
+                        return null;
+                    }
+                    current = new URL(current, location);
+                    continue;
+                }
+                if (status != HttpURLConnection.HTTP_OK) {
+                    Log.d(TAG, "Cover not loaded from " + url + ": HTTP " + status);
+                    return null;
+                }
+                try (InputStream in = connection.getInputStream()) {
+                    return in.readNBytes(MAX_BYTES);
+                }
+            } finally {
+                connection.disconnect();
+            }
+        }
+        Log.d(TAG, "Cover not loaded from " + url + ": too many redirects");
+        return null;
     }
 }
