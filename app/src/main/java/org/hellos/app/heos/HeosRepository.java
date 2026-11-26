@@ -762,10 +762,10 @@ public final class HeosRepository implements DefaultLifecycleObserver {
             stream = null;
             return media;
         }
-        Optional<String> image = media.imageUrl().filter(url -> !url.isBlank());
-        if (image.isEmpty() && !station.favicon().isEmpty()) {
-            image = Optional.of(station.favicon());
-        }
+        // the station logo first: for URL streams the device reports no or only a generic image
+        Optional<String> image = station.favicon().isEmpty()
+                ? media.imageUrl().filter(url -> !url.isBlank())
+                : Optional.of(station.favicon());
         return new NowPlayingMedia(MediaType.STATION, media.song(), media.album(), media.artist(),
                 Optional.of(station.name()), image, media.mediaId(), media.queueId(), media.sourceId(),
                 media.albumId(), media.options());

@@ -147,13 +147,30 @@ public final class NowPlayingFragment extends Fragment {
             CoverLoader.load(binding.cover, null, R.drawable.ic_music_note);
             return;
         }
-        String title = media.song().filter(s -> !s.isBlank()).orElse(media.station().orElse(""));
-        binding.title.setText(title);
-        binding.artist.setText(media.artist().orElse(null));
-        // for radio stations the song is the title and the station name the third line
-        String third = media.isStation() ? media.station().orElse(null) : media.album().orElse(null);
-        binding.album.setText(third != null && !third.equals(title) ? third : null);
+        String station = media.isStation() ? media.station().filter(s -> !s.isBlank()).orElse(null) : null;
+        if (station != null) {
+            // radio: the station name is the title; below it the song and artist, if the device reports any
+            binding.title.setText(station);
+            binding.artist.setText(radioLine(media.song().orElse(null), station));
+            binding.album.setText(radioLine(media.artist().orElse(null), station));
+        } else {
+            String title = media.song().filter(s -> !s.isBlank()).orElse(media.station().orElse(""));
+            binding.title.setText(title);
+            binding.artist.setText(media.artist().orElse(null));
+            String album = media.album().orElse(null);
+            binding.album.setText(album != null && !album.equals(title) ? album : null);
+        }
         CoverLoader.load(binding.cover, media.imageUrl().orElse(null), R.drawable.ic_music_note);
+    }
+
+    /** A song or artist text of a radio station, or {@code null} if it only repeats the station or a URL. */
+    @Nullable
+    private static String radioLine(@Nullable String text, String station) {
+        if (text == null || text.isBlank() || text.strip().equalsIgnoreCase(station.strip())) {
+            return null;
+        }
+        String lower = text.strip().toLowerCase(java.util.Locale.ROOT);
+        return lower.startsWith("http://") || lower.startsWith("https://") ? null : text.strip();
     }
 
     private void renderPlayState(PlayState state) {
